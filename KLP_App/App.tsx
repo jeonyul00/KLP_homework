@@ -1,11 +1,19 @@
+import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StatusBar } from 'react-native';
+
+import MemberStack from '@src/navigations/memberStack';
+import NonMemberStack from '@src/navigations/nonMemberStack';
 
 function App(): React.JSX.Element {
+  // TODO: zustand || recoil
+  const isLoggedIn = true;
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>app</Text>
-    </View>
+    <NavigationContainer>
+      <StatusBar translucent backgroundColor="transparent" />
+      {isLoggedIn ? <MemberStack /> : <NonMemberStack />}
+    </NavigationContainer>
   );
 }
 

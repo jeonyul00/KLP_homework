@@ -76,3 +76,4 @@ yarn-error.log
 
 # ++ env
 .env
+/src/types/env.d.ts
