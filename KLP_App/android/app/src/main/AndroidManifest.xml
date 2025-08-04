@@ -9,7 +9,13 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme"
+      android:screenOrientation="portrait"
       android:supportsRtl="true">
+      
+      <meta-data 
+        android:name="android.app.UI_MODE" 
+        android:value="no" />
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
