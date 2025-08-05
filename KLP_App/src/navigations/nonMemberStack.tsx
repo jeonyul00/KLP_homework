@@ -12,7 +12,7 @@ export type NonMemberStackParamList = {
 const NonMemberStackNavi = createNativeStackNavigator<NonMemberStackParamList>();
 
 const NonMemberStack = () => (
-  <NonMemberStackNavi.Navigator screenOptions={{ headerShown: false }}>
+  <NonMemberStackNavi.Navigator initialRouteName={navigations.SignIn} screenOptions={{ headerShown: false }}>
     <NonMemberStackNavi.Screen name={navigations.SignIn} component={SignIn} />
     <NonMemberStackNavi.Screen name={navigations.SignUp} component={SignUp} />
   </NonMemberStackNavi.Navigator>

@@ -4,10 +4,11 @@ import { StatusBar } from 'react-native';
 
 import MemberStack from '@src/navigations/memberStack';
 import NonMemberStack from '@src/navigations/nonMemberStack';
+import { useMember } from '@src/stores';
 
 function App(): React.JSX.Element {
-  // TODO: zustand || recoil
-  const isLoggedIn = true;
+  const { member } = useMember();
+  const isLoggedIn = !!member.accessToken;
 
   return (
     <NavigationContainer>
