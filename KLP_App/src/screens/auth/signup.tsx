@@ -19,6 +19,11 @@ import { pickProfileImage } from '@src/utils/imagePicker';
 import { handleSignup } from '@src/apis/auth';
 import { useMember } from '@src/stores';
 import Loading from '@src/components/loading';
+import EncryptedStorage from 'react-native-encrypted-storage';
+
+/* 
+  회원 가입
+*/
 
 type Props = NativeStackScreenProps<NonMemberStackParamList, typeof navigations.SignUp>;
 
@@ -33,7 +38,6 @@ const SignUp = ({ navigation }: Props) => {
   const { setMember, isLoading, setLoading } = useMember();
 
   // MARK: function ----------------------------------------------------------------------------------------------------
-
   const handlePickImage = async () => {
     try {
       if (!hasPhotoPermission) {
@@ -112,19 +116,25 @@ const SignUp = ({ navigation }: Props) => {
       formData.append('nickname', form.nickname);
       formData.append('id', form.id);
       formData.append('pwd', form.pwd);
-      const response = await handleSignup(formData);
-
-      // test
-      console.log('test response ::: ', response);
+      const { accessToken, id, message, nickname, refreshToken, status, thumbnail: responseThumbnail } = await handleSignup(formData);
+      console.log(accessToken, id, message, nickname, refreshToken, status, responseThumbnail);
+      if (status === 201) {
+        // TODO: 토스트 메시지
+        setMember({ accessToken: accessToken, id, nickname, thumbnail: responseThumbnail });
+        await EncryptedStorage.setItem(constants.refreshToken, refreshToken);
+      } else {
+        Alert.alert(constants.alertTitle, message);
+      }
     } catch (e) {
+      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
     } finally {
       setLoading(false);
     }
   };
 
+  // MARK: JSX ----------------------------------------------------------------------------------------------------
   if (isLoading) return <Loading />;
 
-  // MARK: JSX ----------------------------------------------------------------------------------------------------
   return (
     <Container style={[styles.container, { paddingBottom: inset.bottom }]}>
       <DismissKey>

@@ -1,10 +1,10 @@
-import { MemberSigninResponse } from '@src/types/auth';
+import { MemberResponse } from '@src/types/auth';
 import api from './index';
 
 // 회원가입
-export const handleSignup = async (formData: FormData): Promise<MemberSigninResponse> => {
+export const handleSignup = async (formData: FormData): Promise<MemberResponse> => {
   try {
-    const response = await api.post<MemberSigninResponse>('/auth/signup', formData, {
+    const response = await api.post<MemberResponse>('/auth/signup', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;

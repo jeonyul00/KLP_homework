@@ -2,14 +2,16 @@ import { create } from 'zustand';
 
 export type Member = {
   accessToken: string;
-  name: string;
-  email: string;
+  id: number;
+  nickname: string;
+  thumbnail: string;
 };
 
 const initialMember: Member = {
   accessToken: '',
-  name: '',
-  email: '',
+  id: 0,
+  nickname: '',
+  thumbnail: '',
 };
 
 type MemberStore = {
