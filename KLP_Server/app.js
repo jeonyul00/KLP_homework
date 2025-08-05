@@ -7,6 +7,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRouter = require('./routes/auth.js');
+const boardRouter = require('./routes/board.js');
 
 var app = express();
 
@@ -19,5 +20,6 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
 
 app.use('/auth', authRouter);
+app.use('/board', boardRouter);
 
 module.exports = app;

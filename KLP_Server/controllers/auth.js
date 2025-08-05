@@ -5,7 +5,7 @@ const pool = require('../utils/db.js');
 const { sign } = require('../utils/jwt');
 const { validateAccountId, validatePassword, validateNickname } = require('../utils/vaildation.js');
 
-// 최로 호출
+// 최초 호출
 exports.initCheck = async (req, res) => {
     try {
         let memberId = 'unknown';
@@ -14,7 +14,7 @@ exports.initCheck = async (req, res) => {
             return res.json({ status: 400, message: '토큰 정보가 올바르지 않습니다.' });
         }
         const [[row]] = await pool.query(`SELECT idx, nickname, thumbnail FROM member where del = "N" AND idx = ?`, [id]);
-        memberId = row.idx;
+        memberId = String(row.idx);
         const accessToken = await sign({ id: row.idx }, 'accessToken');
         return res.json({ status: 201, message: 'hello', accessToken, id: row.idx, nickname: row.nickname, thumbnail: row.thumbnail });
     } catch {
@@ -44,7 +44,7 @@ exports.signup = async (req, res) => {
         }
         const hashedPassword = await bcrypt.hash(pwd, 10);
         const [result] = await pool.query(`INSERT INTO member (member_id, member_pwd, nickname, thumbnail) VALUES (?, ?, ?, ?)`, [id, hashedPassword, nickname, thumbnail]);
-        memberId = result.insertId;
+        memberId = String(result.insertId);
         const jwtAccessToken = await sign({ id: result.insertId }, 'accessToken');
         const jwtRefreshToken = await sign({ id: result.insertId }, 'refreshToken');
         return res.json({ status: 201, message: '가입 완료', accessToken: jwtAccessToken, refreshToken: jwtRefreshToken, id: result.insertId, nickname, thumbnail });
@@ -70,7 +70,7 @@ exports.signin = async (req, res) => {
         if (!isMatch) {
             return res.json({ status: 401, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
         }
-        memberId = member.idx;
+        memberId = String(member.idx);
         const accessToken = await sign({ id: member.idx }, 'accessToken');
         const refreshToken = await sign({ id: member.idx }, 'refreshToken');
         return res.status(200).json({ status: 200, message: '로그인 성공', accessToken, refreshToken, id: member.idx, nickname: member.nickname, thumbnail: member.thumbnail });
