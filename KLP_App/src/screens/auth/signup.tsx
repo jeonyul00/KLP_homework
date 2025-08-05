@@ -125,7 +125,7 @@ const SignUp = ({ navigation }: Props) => {
       } else {
         Alert.alert(constants.alertTitle, message);
       }
-    } catch (e) {
+    } catch {
       Alert.alert(constants.alertTitle, '시스템 오류입니다.');
     } finally {
       setLoading(false);
