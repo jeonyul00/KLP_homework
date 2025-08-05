@@ -93,6 +93,7 @@ const SignUp = ({ navigation }: Props) => {
     if (!value.trim()) return colors.border;
     return errors[field] ? colors.error : colors.primary;
   };
+
   const isFormValid = useMemo(() => {
     return (
       !!thumbnail &&
@@ -233,7 +234,6 @@ const styles = StyleSheet.create({
   thumbnailWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   thumbnailButton: {
     borderWidth: 1,
-
     backgroundColor: colors.white,
     borderRadius: 100,
     width: 200,

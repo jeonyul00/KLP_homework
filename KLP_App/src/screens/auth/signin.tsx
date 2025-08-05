@@ -1,4 +1,4 @@
-import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Container from '@src/components/container';
 import DismissKey from '@src/components/dismissKey';
@@ -10,6 +10,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FastImage from '@d11/react-native-fast-image';
 import { colors } from '@src/constants/colors';
 import DefaultButton from '@src/components/defaultButton';
+import { constants } from '@src/constants';
+import { validateAccountId, validatePassword } from '@src/utils/vaildation';
+import { handleSignin } from '@src/apis/auth';
+import { useMember } from '@src/stores';
+import EncryptedStorage from 'react-native-encrypted-storage';
+import Loading from '@src/components/loading';
 
 /* 
     로그인
@@ -22,6 +28,7 @@ const SignIn = ({ navigation }: Props) => {
   const inset = useSafeAreaInsets();
   const [form, setForm] = useState({ id: '', pwd: '' });
   const isAllValid = form.id.trim() !== '' && form.pwd.trim() !== '';
+  const { isLoading, setLoading, setMember } = useMember();
 
   // MARK: function ----------------------------------------------------------------------------------------------------
   const getBorderColor = (key: keyof typeof form) => {
@@ -32,12 +39,31 @@ const SignIn = ({ navigation }: Props) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = () => {
-    // TODO: 유효성 검사 먼저해서 안 맞으면 리턴 && 알림
-    // TODO: API
+  const handleSubmit = async () => {
+    if (!isAllValid || validateAccountId(form.id) || validatePassword(form.pwd)) {
+      Alert.alert(constants.alertTitle, '아이디 또는 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { accessToken, id, message, nickname, refreshToken, status, thumbnail } = await handleSignin(form);
+      if (status === 200) {
+        // TODO: 토스트 메시지
+        setMember({ accessToken, id, nickname, thumbnail });
+        await EncryptedStorage.setItem(constants.refreshToken, refreshToken);
+      } else {
+        Alert.alert(constants.alertTitle, message);
+      }
+    } catch {
+      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // MARK: JSX ----------------------------------------------------------------------------------------------------
+  if (isLoading) return <Loading />;
+
   return (
     <Container style={[styles.container, { paddingBottom: inset.bottom }]}>
       <DismissKey>

@@ -1,7 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import React, { useEffect } from 'react';
 import { Alert, StatusBar } from 'react-native';
-
 import MemberStack from '@src/navigations/memberStack';
 import NonMemberStack from '@src/navigations/nonMemberStack';
 import { useMember } from '@src/stores';
@@ -33,10 +32,11 @@ function App(): React.JSX.Element {
         setMember({ accessToken, id, nickname, thumbnail });
       } else {
         Alert.alert(constants.alertTitle, message);
+        await EncryptedStorage.clear();
       }
     } catch {
-      await EncryptedStorage.clear();
       Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      await EncryptedStorage.clear();
     } finally {
       setLoading(false);
     }
