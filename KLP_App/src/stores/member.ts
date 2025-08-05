@@ -19,6 +19,7 @@ type MemberStore = {
   isLoading: boolean;
   setMember: (member: Partial<Member>) => void;
   setLoading: (value: boolean) => void;
+  logoutMember: () => void;
 };
 
 export const useMember = create<MemberStore>(set => ({
@@ -26,4 +27,5 @@ export const useMember = create<MemberStore>(set => ({
   isLoading: false,
   setMember: member => set(state => ({ member: { ...state.member, ...member } })),
   setLoading: value => set({ isLoading: value }),
+  logoutMember: () => set({ member: initialMember, isLoading: false }),
 }));

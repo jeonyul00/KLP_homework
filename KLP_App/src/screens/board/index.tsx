@@ -12,6 +12,7 @@ import FastImage from '@d11/react-native-fast-image';
 import { S3 } from '@env';
 import { images } from '@src/assets';
 import dayjs from 'dayjs';
+import Loading from '@src/components/loading';
 
 /* 
     게시판 리스트
@@ -66,6 +67,8 @@ const Board = ({ navigation }: Props) => {
   }, []);
 
   // MARK: JSX ----------------------------------------------------------------------------------------------------
+  if (isLoading) return <Loading />;
+
   return (
     <Container style={styles.container}>
       <FlatList
@@ -84,7 +87,12 @@ const Board = ({ navigation }: Props) => {
               <Text style={styles.profileNickname}>{member.nickname}</Text>
               <Text style={styles.profileSubtitle}>오늘도 좋은 하루 되세요 ☀️</Text>
             </View>
-            <TouchableOpacity style={styles.logoutButton} onPress={() => {}}>
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={() => {
+                navigation.navigate(navigations.SignOut);
+              }}
+            >
               <Text style={styles.logoutText}>로그아웃</Text>
             </TouchableOpacity>
           </View>
