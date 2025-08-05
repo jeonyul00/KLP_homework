@@ -1,4 +1,4 @@
-import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, View, TouchableOpacity, Image } from 'react-native';
 import React, { useCallback, useMemo, useState } from 'react';
 import Container from '@src/components/container';
 import DismissKey from '@src/components/dismissKey';
@@ -13,6 +13,12 @@ import { constants } from '@src/constants';
 import { validateAccountId, validateConfirmPassword, validateNickname, validatePassword } from '@src/utils/vaildation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDebounce } from '@src/hooks/useDebounce';
+import { usePermission } from '@src/hooks/usePermissions';
+import { openSettings } from 'react-native-permissions';
+import { pickProfileImage } from '@src/utils/imagePicker';
+import { handleSignup } from '@src/apis/auth';
+import { useMember } from '@src/stores';
+import Loading from '@src/components/loading';
 
 type Props = NativeStackScreenProps<NonMemberStackParamList, typeof navigations.SignUp>;
 
@@ -20,11 +26,43 @@ const SignUp = ({ navigation }: Props) => {
   // MARK: property ----------------------------------------------------------------------------------------------------
   const inset = useSafeAreaInsets();
   const { debounce } = useDebounce(1000);
+  const hasPhotoPermission = usePermission('PHOTO');
   const [thumbnail, setThumbnail] = useState({ uri: '', name: '', type: '' });
   const [form, setForm] = useState({ nickname: '', id: '', pwd: '', confirmPwd: '' });
   const [errors, setErrors] = useState({ nickname: '', id: '', pwd: '', confirmPwd: '' });
+  const { setMember, isLoading, setLoading } = useMember();
 
   // MARK: function ----------------------------------------------------------------------------------------------------
+
+  const handlePickImage = async () => {
+    try {
+      if (!hasPhotoPermission) {
+        Alert.alert(
+          constants.alertTitle,
+          '사진 접근 권한이 필요합니다. 설정에서 권한을 허용해주세요.',
+          [
+            { text: constants.cancel, style: 'cancel' },
+            {
+              text: '설정으로 이동',
+              onPress: () =>
+                openSettings().catch(() => {
+                  Alert.alert(constants.alertTitle, '설정 화면을 열 수 없습니다.');
+                }),
+            },
+          ],
+          { cancelable: true },
+        );
+        return;
+      }
+      const response = await pickProfileImage();
+      if (response?.uri && response?.name && response?.type) {
+        setThumbnail(response);
+      }
+    } catch (e) {
+      Alert.alert(constants.alertTitle, '이미지를 불러올 수 없습니다.');
+    }
+  };
+
   const validateField = useCallback(
     (field: keyof typeof errors, value: string) => {
       if (!value) return '';
@@ -62,13 +100,29 @@ const SignUp = ({ navigation }: Props) => {
     );
   }, [thumbnail, form, errors]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormValid) {
       Alert.alert(constants.alertTitle, '모든 항목을 올바르게 입력해주세요.');
       return;
     }
-    // TODO:  API
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('thumbnail', thumbnail);
+      formData.append('nickname', form.nickname);
+      formData.append('id', form.id);
+      formData.append('pwd', form.pwd);
+      const response = await handleSignup(formData);
+
+      // test
+      console.log('test response ::: ', response);
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (isLoading) return <Loading />;
 
   // MARK: JSX ----------------------------------------------------------------------------------------------------
   return (
@@ -81,8 +135,19 @@ const SignUp = ({ navigation }: Props) => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.thumbnailWrapper}>
-            <TouchableOpacity style={styles.thumbnailButton}>
-              <FastImage source={images.emptyUser} style={styles.thumbnailImage} resizeMode="contain" tintColor={colors.border} />
+            <TouchableOpacity
+              style={[styles.thumbnailButton, thumbnail.uri ? { borderColor: colors.primary } : { borderColor: colors.border }]}
+              onPress={handlePickImage}
+            >
+              {thumbnail.uri ? (
+                <Image
+                  source={{ uri: thumbnail.uri }}
+                  style={{ width: 200, height: 200, borderRadius: 100, overflow: 'hidden' }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <FastImage source={images.emptyUser} style={styles.thumbnailImage} resizeMode="contain" tintColor={colors.border} />
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.formWrapper}>
@@ -143,7 +208,7 @@ const SignUp = ({ navigation }: Props) => {
           </View>
         </ScrollView>
       </DismissKey>
-      <DefaultButton label="가입하기" onPress={handleSubmit} disabled={!isFormValid} />
+      <DefaultButton label="가입하기" onPress={() => debounce(handleSubmit)} disabled={!isFormValid} />
     </Container>
   );
 };
@@ -158,7 +223,7 @@ const styles = StyleSheet.create({
   thumbnailWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   thumbnailButton: {
     borderWidth: 1,
-    borderColor: colors.border,
+
     backgroundColor: colors.white,
     borderRadius: 100,
     width: 200,

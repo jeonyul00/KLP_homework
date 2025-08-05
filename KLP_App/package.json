@@ -11,6 +11,7 @@
     "reset": "rm -rf node_modules && rm -f package-lock.json && npm cache clean --force && cd ios && rm -rf Pods && rm -f Podfile.lock && pod cache clean --all && cd .. && npm install && cd ios && pod install && cd .. && npx react-native start --reset-cache"
   },
   "dependencies": {
+    "@bam.tech/react-native-image-resizer": "^3.0.11",
     "@d11/react-native-fast-image": "^8.11.0",
     "@react-navigation/elements": "^2.6.2",
     "@react-navigation/native": "^7.1.17",
@@ -19,6 +20,8 @@
     "axios": "^1.11.0",
     "react": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-image-picker": "^8.2.1",
+    "react-native-permissions": "^5.4.2",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.13.1",
     "zustand": "^5.0.7"
