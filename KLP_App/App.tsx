@@ -8,6 +8,12 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 import { constants } from '@src/constants';
 import { initCheck } from '@src/apis/auth';
 import Loading from '@src/components/loading';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/ko';
+
+dayjs.extend(relativeTime);
+dayjs.locale('ko');
 
 function App(): React.JSX.Element {
   const { member, setMember, isLoading, setLoading } = useMember();

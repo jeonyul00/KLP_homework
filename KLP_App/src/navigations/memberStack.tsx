@@ -5,13 +5,13 @@ import Board from '@src/screens/board';
 import BoardDetail from '@src/screens/board/detail';
 import BoardManage from '@src/screens/board/manage';
 
-export type StackParamList = {
+export type MemberStackParamList = {
   [navigations.Board]: undefined;
   [navigations.BoardDetail]: undefined;
   [navigations.BoardManage]: undefined;
 };
 
-const MemberStackNavi = createNativeStackNavigator<StackParamList>();
+const MemberStackNavi = createNativeStackNavigator<MemberStackParamList>();
 
 const MemberStack = () => {
   return (
