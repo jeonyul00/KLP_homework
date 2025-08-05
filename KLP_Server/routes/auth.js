@@ -7,5 +7,6 @@ const { checkToken } = require('../utils/checkToken.js');
 
 router.post('/init', checkToken, controller.initCheck);
 router.post('/signup', uploadImage, controller.signup);
+router.post('/signin', controller.signin);
 
 module.exports = router;

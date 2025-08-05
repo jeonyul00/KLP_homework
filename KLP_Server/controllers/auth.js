@@ -7,33 +7,26 @@ const { validateAccountId, validatePassword, validateNickname } = require('../ut
 
 // 최로 호출
 exports.initCheck = async (req, res) => {
-    const connection = await pool.getConnection();
-    let memberId = 'unknown';
     try {
+        let memberId = 'unknown';
         const { id } = req.memberInfo;
         if (!id) {
             return res.json({ status: 400, message: '토큰 정보가 올바르지 않습니다.' });
         }
-        await connection.beginTransaction();
-        const [[row]] = await connection.query(`select idx, nickname, thumbnail from member where del = "N" and idx = ?`, [id]);
+        const [[row]] = await pool.query(`SELECT idx, nickname, thumbnail FROM member where del = "N" AND idx = ?`, [id]);
         memberId = row.idx;
         const accessToken = await sign({ id: row.idx }, 'accessToken');
-        await connection.commit();
         return res.json({ status: 201, message: 'hello', accessToken, id: row.idx, nickname: row.nickname, thumbnail: row.thumbnail });
     } catch {
         await logErrorToDB({ pk_id: memberId, request_url: req.originalUrl, payload: req.body, message: e.stack || e.message || 'unknown error' });
-        await connection.rollback();
         return res.status(500).json({ status: 500, message: '서버 내부 오류가 발생했습니다.' });
-    } finally {
-        connection.release();
     }
 };
 
 // 회원 가입
 exports.signup = async (req, res) => {
-    const connection = await pool.getConnection();
-    let memberId = 'unknown';
     try {
+        let memberId = 'unknown';
         const thumbnail = req.thumbnail;
         const { nickname, id, pwd } = req.body;
         if (!thumbnail || !nickname || !id || !pwd) {
@@ -45,24 +38,44 @@ exports.signup = async (req, res) => {
         if (nicknameError || idError || pwdError) {
             return res.json({ status: 400, message: '유효성 검사에 실패했습니다.' });
         }
-
-        await connection.beginTransaction();
-        const [existing] = await connection.query('SELECT member_id FROM member WHERE member_id = ? AND del = "N"', [id]);
+        const [existing] = await pool.query('SELECT member_id FROM member WHERE member_id = ? AND del = "N"', [id]);
         if (existing.length > 0) {
             return res.json({ status: 409, message: '이미 사용 중인 아이디입니다.' });
         }
         const hashedPassword = await bcrypt.hash(pwd, 10);
-        const [result] = await connection.query(`INSERT INTO member (member_id, member_pwd, nickname, thumbnail) VALUES (?, ?, ?, ?)`, [id, hashedPassword, nickname, thumbnail]);
+        const [result] = await pool.query(`INSERT INTO member (member_id, member_pwd, nickname, thumbnail) VALUES (?, ?, ?, ?)`, [id, hashedPassword, nickname, thumbnail]);
         memberId = result.insertId;
         const jwtAccessToken = await sign({ id: result.insertId }, 'accessToken');
         const jwtRefreshToken = await sign({ id: result.insertId }, 'refreshToken');
-        await connection.commit();
         return res.json({ status: 201, message: '가입 완료', accessToken: jwtAccessToken, refreshToken: jwtRefreshToken, id: result.insertId, nickname, thumbnail });
     } catch (e) {
         await logErrorToDB({ pk_id: memberId, request_url: req.originalUrl, payload: req.body, message: e.stack || e.message || 'unknown error' });
-        await connection.rollback();
         return res.status(500).json({ status: 500, message: '서버 내부 오류가 발생했습니다.' });
-    } finally {
-        connection.release();
+    }
+};
+
+// 로그인
+exports.signin = async (req, res) => {
+    try {
+        let memberId = 'unknown';
+        const { id, pwd } = req.body;
+        if (!id || !pwd) {
+            return res.json({ status: 400, message: '아이디와 비밀번호를 모두 입력해주세요.' });
+        }
+        const [[member]] = await pool.query('SELECT idx, member_pwd, nickname, thumbnail FROM member WHERE member_id = ? AND del = "N"', [id]);
+        if (!member) {
+            return res.json({ status: 404, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
+        }
+        const isMatch = await bcrypt.compare(pwd, member.member_pwd);
+        if (!isMatch) {
+            return res.json({ status: 401, message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
+        }
+        memberId = member.idx;
+        const accessToken = await sign({ id: member.idx }, 'accessToken');
+        const refreshToken = await sign({ id: member.idx }, 'refreshToken');
+        return res.status(200).json({ status: 200, message: '로그인 성공', accessToken, refreshToken, id: member.idx, nickname: member.nickname, thumbnail: member.thumbnail });
+    } catch (e) {
+        await logErrorToDB({ pk_id: memberId, request_url: req.originalUrl, payload: req.body, message: e.stack || e.message || 'unknown error' });
+        return res.status(500).json({ status: 500, message: '서버 내부 오류가 발생했습니다.' });
     }
 };
