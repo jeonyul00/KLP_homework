@@ -2,18 +2,16 @@ import { useEffect, useState } from 'react';
 import { Platform, AppState } from 'react-native';
 import { check, Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
-type PermissionType = 'LOCATION' | 'PHOTO';
+type PermissionType = 'PHOTO';
 type PermissionOS = {
   [key in PermissionType]: Permission;
 };
 
 const androidPermissions: PermissionOS = {
-  LOCATION: PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
   PHOTO: Number(Platform.Version) >= 33 ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
 };
 
 const iosPermissions: PermissionOS = {
-  LOCATION: PERMISSIONS.IOS.LOCATION_WHEN_IN_USE,
   PHOTO: PERMISSIONS.IOS.PHOTO_LIBRARY,
 };
 

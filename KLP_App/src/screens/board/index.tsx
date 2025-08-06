@@ -14,6 +14,10 @@ import { images } from '@src/assets';
 import dayjs from 'dayjs';
 import Loading from '@src/components/loading';
 
+/* 
+    게시판 리스트
+*/
+
 type Props = NativeStackScreenProps<MemberStackParamList, typeof navigations.Board>;
 
 const Board = ({ navigation }: Props) => {

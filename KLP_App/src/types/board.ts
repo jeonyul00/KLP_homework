@@ -13,17 +13,31 @@ export type BoardListResponse = {
 };
 
 export type BoardDetailResponse = {
-  idx: number;
-  title: string;
-  nickname: string;
-  contents: string;
-  create_date: string;
-  images?: any[];
-  comments?: CommentResponse[];
+  status: number;
+  message: string;
+  data: {
+    board: {
+      idx: number;
+      title: string;
+      contents: string;
+      nickname: string;
+      author: number;
+      create_date: string;
+    };
+    images: BoardImageType[];
+    comments: CommentResponse[];
+  };
+};
+
+export type BoardImageType = {
+  image: string;
+  order: string;
 };
 
 export type CommentResponse = {
   idx: number;
+  board_idx: number;
+  author: number;
   nickname: string;
   contents: string;
   create_date: string;

@@ -22,3 +22,44 @@ export const handlePostBoard = async (form: FormData, accessToken: string): Prom
   });
   return response.data;
 };
+
+// 게시물 수정
+export const handleUpdateBoard = async (formData: FormData, accessToken: string) => {
+  const response = await api.post(`/board/update`, formData, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+// 댓글 등록
+export const handlePostComment = async (idx: number, accessToken: string, comment: string): Promise<{ status: number; message: string }> => {
+  const response = await api.post<{ status: number; message: string }>(
+    `/board/comment`,
+    { idx, comment },
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  return response.data;
+};
+
+// 게시물 삭제
+export const deleteBoard = async (boardIdx: number, accessToken: string): Promise<{ status: number; message: string }> => {
+  const res = await api.post<{ status: number; message: string }>(
+    `/board/delete`,
+    { boardIdx },
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  return res.data;
+};
+
+// 댓글 삭제
+export const deleteComment = async (commentIdx: number, accessToken: string): Promise<{ status: number; message: string }> => {
+  const response = await api.post<{ status: number; message: string }>(
+    `/board/comment/delete`,
+    { idx: commentIdx },
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  return response.data;
+};

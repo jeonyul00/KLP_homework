@@ -14,13 +14,20 @@ import DefaultButton from '@src/components/defaultButton';
 import { constants } from '@src/constants';
 import { pickMultiplePostImages } from '@src/utils/imagePicker';
 import Loading from '@src/components/loading';
-import { handlePostBoard } from '@src/apis/board';
+import { handlePostBoard, handleUpdateBoard } from '@src/apis/board';
 import { useMember } from '@src/stores';
+import { S3 } from '@env';
+import FastImage from '@d11/react-native-fast-image';
+
+/* 
+  게시물 등록 || 수정
+*/
 
 type Props = NativeStackScreenProps<MemberStackParamList, typeof navigations.BoardManage>;
 
 const BoardManage = ({ route, navigation }: Props) => {
-  const idx = route.params?.idx;
+  // MARK: property ----------------------------------------------------------------------------------------------------
+  const { idx, title, contents, paramsImages } = route.params || {};
   const isEdit = !!idx;
   const inset = useSafeAreaInsets();
   const { debounce } = useDebounce(1000);
@@ -29,12 +36,21 @@ const BoardManage = ({ route, navigation }: Props) => {
   const [images, setImages] = useState<{ idx: number; uri: string; name: string; type: string }[]>([]);
   const { setLoading, isLoading, member } = useMember();
 
-  // TODO: isEdit일 경우 게시글 정보 불러오기
+  // MARK: function ----------------------------------------------------------------------------------------------------
   useEffect(() => {
-    if (isEdit) {
-      // TODO: 서버에서 게시글 정보 조회 후 setForm, setImages 호출
+    if (isEdit && title && contents) {
+      setForm({ title, contents });
     }
-  }, [idx]);
+    if (isEdit && paramsImages?.length) {
+      const mapped = paramsImages.map((img, i) => ({
+        idx: i,
+        uri: `${S3}${img.image}`,
+        name: img.image.split('/').pop() ?? `image${i}.jpg`,
+        type: 'image/jpeg',
+      }));
+      setImages(mapped);
+    }
+  }, [isEdit, title, contents, paramsImages]);
 
   const handlePickImage = async () => {
     if (!hasPhotoPermission) {
@@ -50,10 +66,12 @@ const BoardManage = ({ route, navigation }: Props) => {
       ]);
       return;
     }
+
     if (images.length >= 5) {
       Alert.alert(constants.alertTitle, '이미지는 최대 5장까지 등록할 수 있습니다.');
       return;
     }
+
     try {
       const available = 5 - images.length;
       const selectedImages = await pickMultiplePostImages(available);
@@ -98,16 +116,35 @@ const BoardManage = ({ route, navigation }: Props) => {
       await Promise.all(promiseMap);
       formData.append('title', form.title);
       formData.append('contents', form.contents);
-      const { message, status } = await handlePostBoard(formData, member.accessToken);
-      if (status === 200) {
-        // TODO: 토스트 메시지
-        if (navigation.canGoBack()) {
-          navigation.goBack();
+      let message = '';
+      let status = 500;
+      if (isEdit && idx) {
+        formData.append('idx', idx);
+        const response = await handleUpdateBoard(formData, member.accessToken);
+        message = response.message;
+        status = response.status;
+        if (status === 200) {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate(navigations.Board);
+          }
         } else {
-          navigation.navigate(navigations.Board);
+          Alert.alert(constants.alertTitle, message);
         }
       } else {
-        Alert.alert(constants.alertTitle, message);
+        const response = await handlePostBoard(formData, member.accessToken);
+        message = response.message;
+        status = response.status;
+        if (status === 200) {
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate(navigations.Board);
+          }
+        } else {
+          Alert.alert(constants.alertTitle, message);
+        }
       }
     } catch (e) {
       Alert.alert(constants.alertTitle, '시스템 오류입니다.');
@@ -116,6 +153,7 @@ const BoardManage = ({ route, navigation }: Props) => {
     }
   };
 
+  // MARK: JSX ----------------------------------------------------------------------------------------------------
   if (isLoading) return <Loading />;
 
   return (
@@ -146,16 +184,17 @@ const BoardManage = ({ route, navigation }: Props) => {
             value={form.contents}
             onChangeText={text => handleChange('contents', text)}
             multiline
+            maxLength={400}
           />
-          <Text style={[styles.counter, form.title.length < 400 ? styles.counterNormal : styles.counterError]}>{form.title.length} / 400</Text>
+          <Text style={[styles.counter, form.contents.length < 400 ? styles.counterNormal : styles.counterError]}>{form.contents.length} / 400</Text>
           <Text style={[styles.label, { paddingBottom: 8 }]}>이미지 ({images.length}/5)</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scroll} contentContainerStyle={styles.scrollContent}>
             {images.map(img => (
               <Pressable key={img.idx} style={styles.imageBox}>
                 <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemoveImage(img.idx)}>
                   <Text style={styles.removeText}>X</Text>
                 </TouchableOpacity>
-                <Image source={{ uri: img.uri }} style={styles.image} />
+                <FastImage source={{ uri: img.uri }} style={styles.image} />
               </Pressable>
             ))}
             {images.length < 5 && (
@@ -173,6 +212,7 @@ const BoardManage = ({ route, navigation }: Props) => {
 
 export default BoardManage;
 
+// MARK: style ----------------------------------------------------------------------------------------------------
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.background },
   scrollContent: { flexGrow: 1 },

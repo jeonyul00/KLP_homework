@@ -25,9 +25,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
   회원 가입
 */
 
-type Props = NativeStackScreenProps<NonMemberStackParamList, typeof navigations.SignUp>;
-
-const SignUp = ({ navigation }: Props) => {
+const SignUp = () => {
   // MARK: property ----------------------------------------------------------------------------------------------------
   const inset = useSafeAreaInsets();
   const { debounce } = useDebounce(1000);

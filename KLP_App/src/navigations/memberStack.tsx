@@ -5,11 +5,12 @@ import Board from '@src/screens/board';
 import BoardDetail from '@src/screens/board/detail';
 import BoardManage from '@src/screens/board/manage';
 import SignOut from '@src/screens/auth/signout';
+import { BoardImageType } from '@src/types/board';
 
 export type MemberStackParamList = {
   [navigations.Board]: undefined;
   [navigations.BoardDetail]: { idx: number };
-  [navigations.BoardManage]: { idx: number } | undefined;
+  [navigations.BoardManage]: { idx: number; title: string; contents: string; paramsImages: BoardImageType[] } | undefined;
   [navigations.SignOut]: undefined;
 };
 
