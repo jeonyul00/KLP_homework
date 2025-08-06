@@ -29,4 +29,27 @@ const uploadImage = multer({
     },
 }).single('thumbnail');
 
-module.exports = { uploadImage };
+const uploadImageList = multer({
+    storage: multerS3({
+        s3,
+        bucket: process.env.AWS_BUCKET_NAME,
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        acl: 'public-read-write',
+        key: function (req, file, cb) {
+            const ext = path.extname(file.originalname);
+            const basename = path.basename(file.originalname, ext);
+            const timestamp = Date.now();
+            const s3Path = `board/${basename}_${timestamp}${ext}`;
+            if (!req.images) {
+                req.images = [];
+            }
+            req.images.push({ order: req.images.length, s3Path });
+            cb(null, s3Path);
+        },
+    }),
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).array('images', 5);
+
+module.exports = { uploadImage, uploadImageList };
