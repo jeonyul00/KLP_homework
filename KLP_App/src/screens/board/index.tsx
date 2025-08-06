@@ -1,5 +1,5 @@
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from '@src/components/container';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MemberStackParamList } from '@src/navigations/memberStack';
@@ -14,10 +14,6 @@ import { images } from '@src/assets';
 import dayjs from 'dayjs';
 import Loading from '@src/components/loading';
 
-/* 
-    게시판 리스트
-*/
-
 type Props = NativeStackScreenProps<MemberStackParamList, typeof navigations.Board>;
 
 const Board = ({ navigation }: Props) => {
@@ -30,17 +26,21 @@ const Board = ({ navigation }: Props) => {
 
   // MARK: function ----------------------------------------------------------------------------------------------------
   useEffect(() => {
-    handleGetBoardList(1);
+    handleGetBoardList();
   }, []);
 
-  const handleGetBoardList = async (pageParam = 1) => {
+  const handleGetBoardList = async () => {
     if (isLoading || isEnd) return;
     setIsLoading(true);
     try {
-      const { data, hasNext, status } = await getBoardList({ page: pageParam, size: 20 });
+      const { data, hasNext, status } = await getBoardList({ page, size: 20 });
       if (status === 200) {
-        setBoardList(prev => (pageParam === 1 ? data : [...prev, ...data.filter(item => !prev.find(prevItem => prevItem.idx === item.idx))]));
-        setPage(pageParam + 1);
+        setBoardList(prev => {
+          const existing = new Set(prev.map(item => item.idx));
+          const uniqueData = data.filter(item => !existing.has(item.idx));
+          return [...prev, ...uniqueData];
+        });
+        setPage(prev => prev + 1);
         if (!hasNext) setIsEnd(true);
       }
     } finally {
@@ -50,24 +50,27 @@ const Board = ({ navigation }: Props) => {
 
   const handleEndReached = () => {
     if (!isEnd && !isLoading) {
-      handleGetBoardList(page);
+      handleGetBoardList();
     }
   };
 
-  const renderItem = useCallback(({ item }: { item: BoardType }) => {
-    return (
-      <TouchableOpacity style={styles.itemContainer} onPress={() => {}}>
-        <Text style={styles.title}>{item.title}</Text>
-        <View style={styles.meta}>
-          <Text style={styles.nickname}>{item.nickname}</Text>
-          <Text style={styles.date}>{dayjs(item.create_date).fromNow()}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }, []);
+  const renderItem = ({ item }: { item: BoardType }) => (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        navigation.navigate(navigations.BoardDetail, { idx: item.idx });
+      }}
+    >
+      <Text style={styles.title}>{item.title}</Text>
+      <View style={styles.meta}>
+        <Text style={styles.nickname}>{item.nickname}</Text>
+        <Text style={styles.date}>{dayjs(item.create_date).fromNow()}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   // MARK: JSX ----------------------------------------------------------------------------------------------------
-  if (isLoading) return <Loading />;
+  if (isLoading && page === 1) return <Loading />;
 
   return (
     <Container style={styles.container}>
@@ -98,7 +101,12 @@ const Board = ({ navigation }: Props) => {
           </View>
         }
       />
-      <TouchableOpacity style={styles.writeButton}>
+      <TouchableOpacity
+        style={styles.writeButton}
+        onPress={() => {
+          navigation.navigate(navigations.BoardManage);
+        }}
+      >
         <FastImage source={images.writeButton} resizeMode="contain" style={styles.writeIcon} />
       </TouchableOpacity>
     </Container>

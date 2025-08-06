@@ -8,8 +8,8 @@ import SignOut from '@src/screens/auth/signout';
 
 export type MemberStackParamList = {
   [navigations.Board]: undefined;
-  [navigations.BoardDetail]: undefined;
-  [navigations.BoardManage]: undefined;
+  [navigations.BoardDetail]: { idx: number };
+  [navigations.BoardManage]: { idx: number } | undefined;
   [navigations.SignOut]: undefined;
 };
 

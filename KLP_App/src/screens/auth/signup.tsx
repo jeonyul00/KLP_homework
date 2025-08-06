@@ -118,7 +118,6 @@ const SignUp = ({ navigation }: Props) => {
       formData.append('id', form.id);
       formData.append('pwd', form.pwd);
       const { accessToken, id, message, nickname, refreshToken, status, thumbnail: responseThumbnail } = await handleSignup(formData);
-      console.log(accessToken, id, message, nickname, refreshToken, status, responseThumbnail);
       if (status === 201) {
         // TODO: 토스트 메시지
         setMember({ accessToken: accessToken, id, nickname, thumbnail: responseThumbnail });
