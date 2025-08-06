@@ -8,5 +8,9 @@ const { checkToken } = require('../utils/checkToken.js');
 router.get('/', controller.getBoardList);
 router.get('/detail', controller.getBoardDetail);
 router.post('/regist', checkToken, uploadImageList, controller.registBoard);
+router.post('/comment', checkToken, controller.registComment);
+router.post('/delete', checkToken, controller.deleteBoard);
+router.post('/update', checkToken, uploadImageList, controller.updateBoard);
+router.post('/comment/delete', checkToken, controller.deleteComment);
 
 module.exports = router;
