@@ -50,7 +50,7 @@ const Board = ({ navigation }: Props) => {
     } finally {
       setTimeout(() => {
         setIsLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 

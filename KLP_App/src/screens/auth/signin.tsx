@@ -1,4 +1,4 @@
-import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 import Container from '@src/components/container';
 import DismissKey from '@src/components/dismissKey';
@@ -16,6 +16,7 @@ import { handleSignin } from '@src/apis/auth';
 import { useMember } from '@src/stores';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import Loading from '@src/components/loading';
+import { NativeModules } from 'react-native';
 
 /* 
     로그인
@@ -41,25 +42,25 @@ const SignIn = ({ navigation }: Props) => {
 
   const handleSubmit = async () => {
     if (!isAllValid || validateAccountId(form.id) || validatePassword(form.pwd)) {
-      Alert.alert(constants.alertTitle, '아이디 또는 비밀번호가 일치하지 않습니다.');
+      NativeModules.ToastModule.showToast('아이디 또는 비밀번호가 일치하지 않습니다.');
       return;
     }
     setLoading(true);
     try {
       const { accessToken, id, message, nickname, refreshToken, status, thumbnail } = await handleSignin(form);
       if (status === 200) {
-        // TODO: 토스트 메시지
+        NativeModules.ToastModule.showToast(`hello ${nickname}`);
         setMember({ accessToken, id, nickname, thumbnail });
         await EncryptedStorage.setItem(constants.refreshToken, refreshToken);
       } else {
-        Alert.alert(constants.alertTitle, message);
+        NativeModules.ToastModule.showToast(message);
       }
     } catch {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 

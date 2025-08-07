@@ -6,9 +6,6 @@ import { colors } from '@src/constants/colors';
 import DefaultButton from '@src/components/defaultButton';
 import FastImage from '@d11/react-native-fast-image';
 import { images } from '@src/assets';
-import { navigations } from '@src/constants/navigations';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { NonMemberStackParamList } from '@src/navigations/nonMemberStack';
 import { constants } from '@src/constants';
 import { validateAccountId, validateConfirmPassword, validateNickname, validatePassword } from '@src/utils/vaildation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +17,7 @@ import { handleSignup } from '@src/apis/auth';
 import { useMember } from '@src/stores';
 import Loading from '@src/components/loading';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { NativeModules } from 'react-native';
 
 /* 
   회원 가입
@@ -117,18 +115,17 @@ const SignUp = () => {
       formData.append('pwd', form.pwd);
       const { accessToken, id, message, nickname, refreshToken, status, thumbnail: responseThumbnail } = await handleSignup(formData);
       if (status === 201) {
-        // TODO: 토스트 메시지
         setMember({ accessToken: accessToken, id, nickname, thumbnail: responseThumbnail });
         await EncryptedStorage.setItem(constants.refreshToken, refreshToken);
       } else {
-        Alert.alert(constants.alertTitle, message);
+        NativeModules.ToastModule.showToast(message);
       }
     } catch {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 

@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import React, { useEffect } from 'react';
-import { Alert, StatusBar } from 'react-native';
+import { StatusBar } from 'react-native';
 import MemberStack from '@src/navigations/memberStack';
 import NonMemberStack from '@src/navigations/nonMemberStack';
 import { useMember } from '@src/stores';
@@ -11,6 +11,7 @@ import Loading from '@src/components/loading';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
+import { NativeModules } from 'react-native';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ko');
@@ -32,20 +33,19 @@ function App(): React.JSX.Element {
         return;
       }
       const { accessToken, id, message, nickname, status, thumbnail } = await initCheck(refreshToken);
+      NativeModules.ToastModule.showToast(message);
       if (status === 201) {
-        // TODO: 토스트 메시지
         setMember({ accessToken, id, nickname, thumbnail });
       } else {
-        Alert.alert(constants.alertTitle, message);
         await EncryptedStorage.clear();
       }
     } catch {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
       await EncryptedStorage.clear();
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 

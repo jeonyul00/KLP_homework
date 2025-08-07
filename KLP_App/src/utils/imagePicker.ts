@@ -1,7 +1,6 @@
 import ImageResizer from '@bam.tech/react-native-image-resizer';
 import { launchImageLibrary } from 'react-native-image-picker';
 
-// TODO: 단일, 복수 이미지 선택 함수 하나로 만들 수 있을 듯
 export const pickProfileImage = async (): Promise<{ uri: string; name: string; type: string } | null> => {
   return new Promise((resolve, reject) => {
     launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 }, async response => {

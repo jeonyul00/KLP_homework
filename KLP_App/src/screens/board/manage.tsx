@@ -1,4 +1,4 @@
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Keyboard, Pressable } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Keyboard, Pressable } from 'react-native';
 import React, { useState, useEffect, useMemo } from 'react';
 import Container from '@src/components/container';
 import DismissKey from '@src/components/dismissKey';
@@ -18,6 +18,8 @@ import { handlePostBoard, handleUpdateBoard } from '@src/apis/board';
 import { useMember } from '@src/stores';
 import { S3 } from '@env';
 import FastImage from '@d11/react-native-fast-image';
+import { NativeModules } from 'react-native';
+import { getMimeType } from '@src/utils/getMimeType';
 
 /* 
   게시물 등록 || 수정
@@ -42,12 +44,18 @@ const BoardManage = ({ route, navigation }: Props) => {
       setForm({ title, contents });
     }
     if (isEdit && paramsImages?.length) {
-      const mapped = paramsImages.map((img, i) => ({
-        idx: i,
-        uri: `${S3}${img.image}`,
-        name: img.image.split('/').pop() ?? `image${i}.jpg`,
-        type: 'image/jpeg',
-      }));
+      const mapped = paramsImages.map((img, i) => {
+        const uri = `${S3}${img.image}`;
+        const fileName = img.image.split('/').pop() ?? `image${i}.jpg`;
+        const ext = fileName.split('.').pop() ?? 'jpg';
+        return {
+          idx: i,
+          uri,
+          name: fileName,
+          type: getMimeType(ext),
+        };
+      });
+
       setImages(mapped);
     }
   }, [isEdit, title, contents, paramsImages]);
@@ -60,7 +68,7 @@ const BoardManage = ({ route, navigation }: Props) => {
           text: '설정으로 이동',
           onPress: () =>
             openSettings().catch(() => {
-              Alert.alert(constants.alertTitle, '설정 화면을 열 수 없습니다.');
+              NativeModules.ToastModule.showToast('설정 화면을 열 수 없습니다.');
             }),
         },
       ]);
@@ -68,7 +76,7 @@ const BoardManage = ({ route, navigation }: Props) => {
     }
 
     if (images.length >= 5) {
-      Alert.alert(constants.alertTitle, '이미지는 최대 5장까지 등록할 수 있습니다.');
+      NativeModules.ToastModule.showToast('이미지는 최대 5장까지 등록할 수 있습니다.');
       return;
     }
 
@@ -80,7 +88,7 @@ const BoardManage = ({ route, navigation }: Props) => {
         setImages(prev => [...prev, ...selectedWithIdx]);
       }
     } catch {
-      Alert.alert(constants.alertTitle, '이미지를 불러올 수 없습니다.');
+      NativeModules.ToastModule.showToast('이미지를 불러올 수 없습니다.');
     }
   };
 
@@ -101,7 +109,7 @@ const BoardManage = ({ route, navigation }: Props) => {
 
   const handleSubmit = async () => {
     if (!isValid) {
-      Alert.alert(constants.alertTitle, '제목과 내용을 모두 입력해주세요.');
+      NativeModules.ToastModule.showToast('제목과 내용을 모두 입력해주세요.');
       return;
     }
     try {
@@ -130,7 +138,7 @@ const BoardManage = ({ route, navigation }: Props) => {
             navigation.navigate(navigations.Board);
           }
         } else {
-          Alert.alert(constants.alertTitle, message);
+          NativeModules.ToastModule.showToast(message);
         }
       } else {
         const response = await handlePostBoard(formData, member.accessToken);
@@ -143,15 +151,15 @@ const BoardManage = ({ route, navigation }: Props) => {
             navigation.navigate(navigations.Board);
           }
         } else {
-          Alert.alert(constants.alertTitle, message);
+          NativeModules.ToastModule.showToast(message);
         }
       }
     } catch (e) {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 

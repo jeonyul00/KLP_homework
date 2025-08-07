@@ -71,7 +71,7 @@ const BoardDetail = ({ route, navigation }: Props) => {
     } finally {
       setTimeout(() => {
         setLoading(false);
-      }, 1000);
+      }, 500);
     }
   };
 
