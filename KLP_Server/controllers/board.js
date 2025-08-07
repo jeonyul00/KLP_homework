@@ -20,9 +20,9 @@ exports.getBoardList = async (req, res) => {
 
 // 게시물 등록
 exports.registBoard = async (req, res) => {
+    let memberId = 'unknown';
     const connection = await pool.getConnection();
     try {
-        let memberId = 'unknown';
         const { id } = req.memberInfo;
         if (!id) return res.json({ status: 401, message: '인증 정보가 없습니다.' });
         memberId = id;
