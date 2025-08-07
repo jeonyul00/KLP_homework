@@ -19,7 +19,7 @@ const checkToken = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('checkToken middleware error:', error);
-        return res.json({ message: '시스템 오류입니다. 다시 시도해주세요.' });
+        return res.status(500).json({ status: 500, message: '서버 내부 오류가 발생했습니다.' });
     }
 };
 
