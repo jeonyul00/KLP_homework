@@ -29,6 +29,7 @@ import { colors } from '@src/constants/colors';
 import FastImage from '@d11/react-native-fast-image';
 import { useMember } from '@src/stores';
 import { useDebounce } from '@src/hooks/useDebounce';
+import { NativeModules } from 'react-native';
 
 /* 
   게시물 상세
@@ -64,10 +65,10 @@ const BoardDetail = ({ route, navigation }: Props) => {
         setImages(data.images);
         setCommentList(data.comments);
       } else {
-        Alert.alert(constants.alertTitle, message);
+        NativeModules.ToastModule.showToast(message);
       }
     } catch (e) {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -84,10 +85,10 @@ const BoardDetail = ({ route, navigation }: Props) => {
         setCommentText('');
         await handleGetBoardDetail(idx);
       } else {
-        Alert.alert(constants.alertTitle, message);
+        NativeModules.ToastModule.showToast(message);
       }
     } catch (e) {
-      Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+      NativeModules.ToastModule.showToast('시스템 오류입니다.');
     }
   };
 
@@ -111,10 +112,10 @@ const BoardDetail = ({ route, navigation }: Props) => {
               if (status === 200) {
                 navigation.reset({ index: 0, routes: [{ name: navigations.Board }] });
               } else {
-                Alert.alert(constants.alertTitle, message);
+                NativeModules.ToastModule.showToast(message);
               }
             } catch (e) {
-              Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+              NativeModules.ToastModule.showToast('시스템 오류입니다.');
             }
           },
         },
@@ -135,10 +136,10 @@ const BoardDetail = ({ route, navigation }: Props) => {
             if (status === 200) {
               await handleGetBoardDetail(idx);
             } else {
-              Alert.alert(constants.alertTitle, message);
+              NativeModules.ToastModule.showToast(message);
             }
           } catch (e) {
-            Alert.alert(constants.alertTitle, '시스템 오류입니다.');
+            NativeModules.ToastModule.showToast('시스템 오류입니다.');
           }
         },
       },
@@ -146,7 +147,14 @@ const BoardDetail = ({ route, navigation }: Props) => {
   };
 
   // MARK: JSX ----------------------------------------------------------------------------------------------------
-  if (loading || !board) return <Loading />;
+  if (loading) return <Loading />;
+  if (!board) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>게시글 정보를 불러올 수 없습니다.</Text>
+      </View>
+    );
+  }
 
   return (
     <Container style={{ paddingBottom: inset.bottom }}>
