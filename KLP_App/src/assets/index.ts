@@ -3,4 +3,5 @@ export const images = {
   emptyUser: require('../assets/emptyUser.png'),
   writeButton: require('../assets/writeButton.png'),
   logout: require('../assets/logout.png'),
+  loading: require('../assets/loading.json'),
 };

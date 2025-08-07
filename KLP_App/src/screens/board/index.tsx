@@ -48,7 +48,9 @@ const Board = ({ navigation }: Props) => {
         if (!hasNext) setIsEnd(true);
       }
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 

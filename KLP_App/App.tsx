@@ -11,6 +11,7 @@ import Loading from '@src/components/loading';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
+import { delay } from '@src/utils/delay';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ko');
@@ -29,7 +30,6 @@ function App(): React.JSX.Element {
       const refreshToken = await EncryptedStorage.getItem(constants.refreshToken);
       if (!refreshToken) {
         await EncryptedStorage.clear();
-        setLoading(false);
         return;
       }
       const { accessToken, id, message, nickname, status, thumbnail } = await initCheck(refreshToken);
@@ -44,7 +44,9 @@ function App(): React.JSX.Element {
       Alert.alert(constants.alertTitle, '시스템 오류입니다.');
       await EncryptedStorage.clear();
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 

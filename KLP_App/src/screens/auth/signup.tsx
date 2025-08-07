@@ -126,7 +126,9 @@ const SignUp = () => {
     } catch {
       Alert.alert(constants.alertTitle, '시스템 오류입니다.');
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     }
   };
 
