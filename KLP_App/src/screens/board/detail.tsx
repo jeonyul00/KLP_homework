@@ -1,17 +1,4 @@
-import {
-  Text,
-  View,
-  ScrollView,
-  Alert,
-  Image,
-  FlatList,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  TouchableOpacity,
-  Dimensions,
-  Keyboard,
-} from 'react-native';
+import { Text, View, ScrollView, Alert, FlatList, StyleSheet, Pressable, TextInput, TouchableOpacity, Dimensions, Keyboard } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MemberStackParamList } from '@src/navigations/memberStack';
