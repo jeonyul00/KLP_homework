@@ -11,7 +11,6 @@ import Loading from '@src/components/loading';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
-import { delay } from '@src/utils/delay';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ko');

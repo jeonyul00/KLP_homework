@@ -49,7 +49,7 @@ const Board = ({ navigation }: Props) => {
       }
     } finally {
       setTimeout(() => {
-        setLoading(false);
+        setIsLoading(false);
       }, 1000);
     }
   };
