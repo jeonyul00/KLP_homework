@@ -1,4 +1,6 @@
-export type MemberResponse = {
+import { DefaultResponse } from './common';
+
+export interface MemberResponse extends DefaultResponse {
   status: number;
   message: string;
   accessToken: string;
@@ -6,4 +8,4 @@ export type MemberResponse = {
   id: number;
   nickname: string;
   thumbnail: string;
-};
+}
